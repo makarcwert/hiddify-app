@@ -168,6 +168,7 @@ class ProfileParser with InfraLogger {
     final rs = await _httpClient
         .download(url.trim(), tempFilePath, cancelToken: cancelToken, headers: hwidHeaders)
         .catchError((err) {
+      loggy.error('subscription download failed: ${err is DioException ? '${err.type} ${err.message} ${err.error} ${err.response?.statusCode}' : err}');
       if (CancelToken.isCancel(err as DioException)) {
         throw const ProfileFailure.cancelByUser('HTTP request for getting profile content canceled by user.');
       }

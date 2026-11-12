@@ -50,7 +50,13 @@ extension DioExceptionPresenter on DioException {
     DioExceptionType.receiveTimeout => (type: t.errors.connection.timeout, message: null),
     DioExceptionType.badCertificate => (type: t.errors.connection.badCertificate, message: message),
     DioExceptionType.badResponse => (type: t.errors.connection.badResponse, message: message),
-    DioExceptionType.connectionError => (type: t.errors.connection.connectionError, message: message),
-    _ => (type: t.errors.connection.unexpected, message: message),
+    DioExceptionType.connectionError => (type: t.errors.connection.connectionError, message: _details),
+    _ => (type: t.errors.connection.unexpected, message: _details),
   };
+
+  /// The message of dio, else the error underneath it (a SocketException, HttpException...).
+  String? get _details {
+    final parts = <String>[if (message != null) message!, if (error != null) error.toString()];
+    return parts.isEmpty ? null : parts.join('\n');
+  }
 }
