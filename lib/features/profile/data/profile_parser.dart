@@ -174,6 +174,18 @@ class ProfileParser with InfraLogger {
       }
       throw err;
     });
+    try {
+      final body = File(tempFilePath).readAsStringSync();
+      final head = body.length > 600 ? body.substring(0, 600) : body;
+      loggy.error(
+        'subscription response: status=${rs.statusCode} length=${body.length}\n'
+        'request headers: ${hwidHeaders}\n'
+        'response headers: ${rs.headers.map}\n'
+        'body head: $head',
+      );
+    } catch (e) {
+      loggy.error('subscription response: could not read body: $e');
+    }
     // fixing headers before return
     return rs.headers.map.map((key, value) {
       if (value.length == 1) return MapEntry(key, value.first);
