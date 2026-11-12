@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 90
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v6
 
@@ -35,3 +35,13 @@ jobs:
           path: build/windows/x64/runner/Release
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish a release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="hwid-${GITHUB_RUN_NUMBER}"
+          cp build/windows/x64/runner/Release/data/app.so app.so
+          (cd build/windows/x64/runner/Release && 7z a -tzip ../../../../../Hiddify-HWID-Windows.zip . >/dev/null)
+          gh release create "$tag" Hiddify-HWID-Windows.zip app.so --target "$GITHUB_SHA" --title "Hiddify HWID $tag" --notes "Unsigned Windows build with x-hwid headers." --prerelease
