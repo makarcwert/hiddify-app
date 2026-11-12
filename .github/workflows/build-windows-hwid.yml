@@ -1,0 +1,37 @@
+# Unsigned Windows build with HWID headers on subscription requests.
+# Run it from the Actions tab (Run workflow); the result is the "Hiddify-HWID-Windows" artifact.
+name: Build Windows (HWID)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [hwid]
+
+env:
+  CHANNEL: prod
+  IS_GITHUB_ACTIONS: 1
+
+jobs:
+  build:
+    name: windows-x64
+    runs-on: windows-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-flutter
+        with:
+          platform: windows
+
+      - name: Build the Release tree
+        run: make windows-validate
+
+      - name: Upload the build
+        uses: actions/upload-artifact@v6
+        with:
+          name: Hiddify-HWID-Windows
+          path: build/windows/x64/runner/Release
+          if-no-files-found: error
+          retention-days: 30

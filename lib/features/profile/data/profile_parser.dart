@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hiddify/core/db/db.dart';
 import 'package:hiddify/core/http_client/dio_http_client.dart';
+import 'package:hiddify/core/http_client/hwid.dart';
 import 'package:hiddify/core/model/optional_range.dart';
 import 'package:hiddify/features/profile/data/profile_data_mapper.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
@@ -163,7 +164,10 @@ class ProfileParser with InfraLogger {
     // if (url.startsWith("http://"))
     //   throw const ProfileFailure.invalidUrl('HTTP is not supported. Please use HTTPS for secure connection.');
 
-    final rs = await _httpClient.download(url.trim(), tempFilePath, cancelToken: cancelToken).catchError((err) {
+    final hwidHeaders = await Hwid.headers();
+    final rs = await _httpClient
+        .download(url.trim(), tempFilePath, cancelToken: cancelToken, headers: hwidHeaders)
+        .catchError((err) {
       if (CancelToken.isCancel(err as DioException)) {
         throw const ProfileFailure.cancelByUser('HTTP request for getting profile content canceled by user.');
       }
@@ -204,6 +208,7 @@ class ProfileParser with InfraLogger {
             line.trimRight(),
             cancelToken: cancelToken,
             responseType: ResponseType.plain,
+            headers: await Hwid.headers(),
           );
           results[currentIndex] = (response.data ?? '').trim();
         } catch (err) {

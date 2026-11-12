@@ -114,6 +114,7 @@ class DioHttpClient with InfraLogger {
     ({String username, String password})? credentials,
     bool proxyOnly = false,
     ResponseType? responseType,
+    Map<String, String>? headers,
   }) async {
     // in VPN mode the local port is closed, and the VPN carries the request instead
     final portOpen = await isPortOpen("127.0.0.1", port);
@@ -127,7 +128,7 @@ class DioHttpClient with InfraLogger {
     return dio.get<T>(
       url,
       cancelToken: cancelToken,
-      options: _options(url, userAgent: userAgent, credentials: credentials, responseType: responseType),
+      options: _options(url, userAgent: userAgent, credentials: credentials, responseType: responseType, headers: headers),
     );
   }
 
@@ -139,6 +140,7 @@ class DioHttpClient with InfraLogger {
     ({String username, String password})? credentials,
     bool proxyOnly = false,
     ProgressCallback? onReceiveProgress,
+    Map<String, String>? headers,
   }) async {
     final mode = proxyOnly
         ? "proxy"
@@ -151,7 +153,7 @@ class DioHttpClient with InfraLogger {
       path,
       cancelToken: cancelToken,
       onReceiveProgress: onReceiveProgress,
-      options: _options(url, userAgent: userAgent, credentials: credentials),
+      options: _options(url, userAgent: userAgent, credentials: credentials, headers: headers),
     );
   }
 
@@ -160,6 +162,7 @@ class DioHttpClient with InfraLogger {
     String? userAgent,
     ({String username, String password})? credentials,
     ResponseType? responseType,
+    Map<String, String>? headers,
   }) {
     final uri = Uri.parse(url);
 
@@ -180,6 +183,7 @@ class DioHttpClient with InfraLogger {
       headers: {
         "User-Agent": userAgent ?? this.userAgent,
         if (basicAuth != null) "authorization": basicAuth,
+        ...?headers,
         // "Accept": "application/json",
         // "Content-Type": "application/json",
       },
